@@ -40,6 +40,9 @@ class CamsenseNode(Node):
         self.angle_offset = 15
         
         self.last_scan_time = self.get_clock().now()
+        
+        # send message with timer 
+        self.timer = self.create_timer(0.2, self.publish_message) # 5 Hz
 
         
     def listen_port(self):
@@ -66,8 +69,8 @@ class CamsenseNode(Node):
                 angles = [2 * math.pi - (start_angle + angle_increment * i) for i in range(8)]
                 
                 self.find_best_positions(angles, distances, intensities)
-                if end_angle >= 360: 
-                    self.publish_message()
+                # if end_angle >= 360: 
+                    # self.publish_message()
                 
             prev_byte = cur_byte
             
