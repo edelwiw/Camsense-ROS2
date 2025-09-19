@@ -76,10 +76,10 @@ class CamsenseNode(Node):
     def find_best_positions(self, angles, distances, intensities):
         for i in range(len(angles)): 
             actual_angle = angles[i] % 360.0
-            neares_angle_index = min(round(actual_angle * self.num_points / 360.0), 399)
-            self.points_buffer[neares_angle_index] = distances[i]
-            self.intensities_buffer[neares_angle_index] = intensities[i]
-            
+            nearest_angle_index = min(round(actual_angle * self.num_points / 360.0), 399)
+            self.points_buffer[nearest_angle_index] = distances[i]
+            self.intensities_buffer[nearest_angle_index] = intensities[i]
+
 
     def publish_message(self):      
         scan = LaserScan()
