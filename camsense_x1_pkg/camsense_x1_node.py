@@ -15,13 +15,11 @@ class CamsenseNode(Node):
         self.declare_parameter("port", "/dev/ttyAMA0")
         self.declare_parameter("topic", "/scan")
         self.declare_parameter("frame_id", "laser")
-        self.declare_parameter("angle_min", 0.0)
-        self.declare_parameter("angle_max", 2.0 * math.pi)
         self.declare_parameter("range_min", 0.0)
         self.declare_parameter("range_max", 8.0)
-    
-        self.angle_min = self.get_parameter("angle_min").get_parameter_value().double_value
-        self.angle_max = self.get_parameter("angle_max").get_parameter_value().double_value
+
+        self.angle_min = 0.0
+        self.angle_max = 2.0 * math.pi
         self.range_min = self.get_parameter("range_min").get_parameter_value().double_value
         self.range_max = self.get_parameter("range_max").get_parameter_value().double_value
         self.frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
@@ -72,7 +70,7 @@ class CamsenseNode(Node):
             prev_byte = cur_byte
             
     # Estimation of best ROS2 point to write current distance 
-    # Atcual angle could be not in preinited angles, it's impossible to use it in ROS2 
+    # Actual angle could be not in preinited angles, it's impossible to use it in ROS2 
     def find_best_positions(self, angles, distances, intensities):
         for i in range(len(angles)): 
             actual_angle = angles[i] % 360.0
@@ -90,8 +88,8 @@ class CamsenseNode(Node):
         scan.angle_min = self.angle_min
         scan.angle_max = self.angle_max
         scan.angle_increment = 2.0 * math.pi / self.num_points 
-        scan.time_increment = 1.0 / 2000.0
-        scan.scan_time = 0.2 
+        scan.time_increment = 1.0 / (400 * 5) # in average 5 rpm, 400 points per rotation
+        scan.scan_time = 1.0 / 5 # 5 rpm
         
         scan.range_min = self.range_min
         scan.range_max = self.range_max
@@ -109,6 +107,7 @@ def main(args=None):
 
     rclpy.spin(camsense_x1_node)
 
+    # TODO: destroy the node correctly
     camsense_x1_node.destroy_node()
     rclpy.shutdown()
 
