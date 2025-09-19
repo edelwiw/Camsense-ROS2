@@ -38,6 +38,8 @@ class CamsenseNode(Node):
         self.thread.daemon = True
         self.thread.start()
         self.angle_offset = 15
+        
+        self.last_scan_time = self.get_clock().now()
 
         
     def listen_port(self):
@@ -79,7 +81,7 @@ class CamsenseNode(Node):
             self.intensities_buffer[neares_angle_index] = intensities[i]
             
 
-    def publish_message(self):
+    def publish_message(self):      
         scan = LaserScan()
         scan.header = Header()
         scan.header.stamp = self.get_clock().now().to_msg()
@@ -89,7 +91,8 @@ class CamsenseNode(Node):
         scan.angle_max = self.angle_max
         scan.angle_increment = 2.0 * math.pi / self.num_points 
         scan.time_increment = 1.0 / (400 * 5) # in average 5 rpm, 400 points per rotation
-        scan.scan_time = 1.0 / 5 # 5 rpm
+        scan.scan_time = self.get_clock().now() - self.last_scan_time
+        self.last_scan_time = self.get_clock().now()
         
         scan.range_min = self.range_min
         scan.range_max = self.range_max
