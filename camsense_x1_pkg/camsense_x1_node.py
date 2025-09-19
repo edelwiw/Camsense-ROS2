@@ -91,7 +91,7 @@ class CamsenseNode(Node):
         scan.angle_max = self.angle_max
         scan.angle_increment = 2.0 * math.pi / self.num_points 
         scan.time_increment = 1.0 / (400 * 5) # in average 5 rpm, 400 points per rotation
-        scan.scan_time = self.get_clock().now() - self.last_scan_time
+        scan.scan_time = (self.get_clock().now() - self.last_scan_time).nanoseconds / 1e9
         self.last_scan_time = self.get_clock().now()
         
         scan.range_min = self.range_min
