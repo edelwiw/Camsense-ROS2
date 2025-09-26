@@ -42,7 +42,7 @@ class CamsenseNode(Node):
         self.last_scan_time = self.get_clock().now()
         
         # send message with timer 
-        self.timer = self.create_timer(0.2, self.publish_message) # 5 Hz
+        self.timer = self.create_timer(1/60, self.publish_message) # 60 Hz
 
         
     def listen_port(self):
