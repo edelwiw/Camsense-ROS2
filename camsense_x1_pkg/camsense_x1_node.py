@@ -13,8 +13,8 @@ class CamsenseNode(Node):
     def __init__(self):
         super().__init__("camsense_node")
         self.declare_parameter("port", "/dev/ttyAMA0")
-        self.declare_parameter("topic", "/scan")
-        self.declare_parameter("frame_id", "laser")
+        self.declare_parameter("topic", "/laser_scan")
+        self.declare_parameter("frame_id", "laser_link")
         self.declare_parameter("range_min", 0.0)
         self.declare_parameter("range_max", 8.0)
 
@@ -104,16 +104,22 @@ class CamsenseNode(Node):
         scan.intensities = self.intensities_buffer
 
         self.publisher.publish(scan)
-
+        
+    def cleanup(self):
+        self.timer.reset()
+        self.thread.join()
+    
 
 def main(args=None):
     rclpy.init(args=args)
 
     camsense_x1_node = CamsenseNode()
 
-    rclpy.spin(camsense_x1_node)
+    try:
+        rclpy.spin(camsense_x1_node)
+    finally: 
+        camsense_x1_node.cleanup()
 
-    # TODO: destroy the node correctly
     camsense_x1_node.destroy_node()
     rclpy.shutdown()
 
