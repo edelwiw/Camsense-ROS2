@@ -119,9 +119,8 @@ def main(args=None):
         rclpy.spin(camsense_x1_node)
     finally: 
         camsense_x1_node.cleanup()
-
-    camsense_x1_node.destroy_node()
-    rclpy.shutdown()
+        camsense_x1_node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":
