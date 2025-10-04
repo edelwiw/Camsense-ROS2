@@ -34,20 +34,18 @@ class CamsenseNode(Node):
         self.points_buffer = [0] * self.num_points # in average 50 data packets per rotation, 8 point in each (in average 5 rpm)
         self.intensities_buffer = [0] * self.num_points 
         
-        self.thread = threading.Thread(target=self.listen_port)
-        self.thread.daemon = True
-        self.thread.start()
         self.angle_offset = 15
-        
+        self.running = True
+                
+        self.timer = self.create_timer(1/5, self.publish_message) # 5 Hz
         self.last_scan_time = self.get_clock().now()
         
-        # send message with timer 
-        self.timer = self.create_timer(1/60, self.publish_message) # 60 Hz
-
+        self.thread = threading.Thread(target=self.listen_port)
+        self.thread.start()
         
     def listen_port(self):
         prev_byte = 0 
-        while True: 
+        while self.running: 
             cur_byte = struct.unpack("B", self.ser.read(1))[0]
             if prev_byte == 0x55 and cur_byte == 0xAA: # check header matching 
                 self.ser.read(2) # skip 2 bytes 
@@ -83,7 +81,6 @@ class CamsenseNode(Node):
             self.points_buffer[nearest_angle_index] = distances[i]
             self.intensities_buffer[nearest_angle_index] = intensities[i]
 
-
     def publish_message(self):      
         scan = LaserScan()
         scan.header = Header()
@@ -106,8 +103,11 @@ class CamsenseNode(Node):
         self.publisher.publish(scan)
         
     def cleanup(self):
+        self.running = False
         self.timer.reset()
         self.thread.join()
+        self.ser.close()
+        
     
 
 def main(args=None):
@@ -117,6 +117,8 @@ def main(args=None):
 
     try:
         rclpy.spin(camsense_x1_node)
+    except KeyboardInterrupt:
+        pass
     finally: 
         camsense_x1_node.cleanup()
         camsense_x1_node.destroy_node()
